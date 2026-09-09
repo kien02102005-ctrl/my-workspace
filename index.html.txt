@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORKSPACE - Khoa Hóa Lý</title>
+    <!-- Chart.js để vẽ biểu đồ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-hover: #1d4ed8;
+            --sidebar-bg: #0f172a;
+            --bg-light: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- 1. GIAO DIỆN ĐĂNG NHẬP --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-card {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 380px;
+            text-align: center;
+        }
+
+        .login-card .icon {
+            font-size: 48px;
+            color: #2563eb;
+            margin-bottom: 15px;
+        }
+
+        .login-card h2 {
+            color: #1e293b;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .login-card p {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            border-color: #2563eb;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background-color: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-login:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* --- 2. GIAO DIỆN CHÍNH (APP MAIN) --- */
+        #app-screen {
+            display: none;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .user-profile {
+            padding: 15px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .user-profile .name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .user-profile .badge {
+            display: inline-block;
+            background-color: #ef4444;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 15px 0;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #2563eb;
+            color: #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            background-color: #fff;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .top-bar h2 {
+            font-size: 18px;
+            color: #1e293b;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .admin-select-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-select-box select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            outline: none;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .btn-action {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-action.btn-danger {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+        }
+
+        .tab-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- STYLES CHO CÁC TAB --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Tab Danh sách */
+        .table-container {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+        }
+
+        /* Style Cảnh Báo Quá Hạn */
+        tr.row-overdue {
+            background-color: #fef2f2 !important;
+        }
+
+        tr.row-overdue td {
+            color: #991b1b;
+        }
+
+        .badge-overdue {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 6px;
+        }
+
+        .status-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-doing { background: #dbeafe; color: #1d4ed8; }
+        .status-todo { background: #f3e8ff; color: #6b21a8; }
+        .status-done { background: #dcfce7; color: #15803d; }
+
+        /* Tab Kanban */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            height: 100%;
+        }
+
+        .kanban-col {
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 400px;
+        }
+
+        .kanban-col-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kanban-card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            cursor: grab;
+            border-left: 4px solid transparent;
+        }
+
+        .kanban-card.card-overdue {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .kanban-card:active {
+            cursor: grabbing;
+        }
+
+        .kanban-card .id { color: #2563eb; font-size: 12px; font-weight: bold; }
+        .kanban-card .title { font-size: 14px; font-weight: 600; margin: 5px 0 10px; }
+        .kanban-card .meta { font-size: 12px; color: #64748b; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Tab KPI */
+        .kpi-table input {
+            width: 70px;
+            padding: 4px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-right: 2px;
+        }
+        .btn-edit { background-color: #f59e0b; color: white; }
+        .btn-delete { background-color: #ef4444; color: white; }
+        .btn-view { background-color: #2563eb; color: white; }
+
+        /* Box Chọn Đối Tượng Chấm KPI */
+        .kpi-target-bar {
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .kpi-target-bar select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #0284c7;
+            font-weight: bold;
+            color: #0369a1;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="icon"><i class="fa-solid fa-flask"></i></div>
+            <h2>KHOA HÓA LÝ</h2>
+            <p id="form-sub-title">Đăng nhập hệ thống quản trị công việc</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                <button type="button" id="tab-login-btn" onclick="toggleAuthTab('login')" style="flex: 1; padding: 8px; border: none; background: none; font-weight: bold; color: #2563eb; border-bottom: 2px solid #2563eb; cursor: pointer;">ĐĂNG NHẬP</button>
+                <button type="button" id="tab-register-btn" onclick="toggleAuthTab('register')" style="flex: 1; padding: 8px; border: none; background: none; font-weight: bold; color: #64748b; cursor: pointer;">ĐĂNG KÝ</button>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required>
+                </div>
+                <button type="submit" class="btn-login">ĐĂNG NHẬP</button>
+            </form>
+
+            <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
+                <div class="form-group">
+                    <label>Gmail</label>
+                    <input type="email" id="reg-email" placeholder="example@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="reg-username" placeholder="Tạo tên đăng nhập..." required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="reg-password" placeholder="Nhập mật khẩu..." required>
+                </div>
+                <div class="form-group">
+                    <label>Xác nhận mật khẩu</label>
+                    <input type="password" id="reg-confirm-password" placeholder="Nhập lại mật khẩu..." required>
+                </div>
+                <button type="submit" class="btn-login" style="background-color: #10b981;">ĐĂNG KÝ TÀI KHOẢN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MÀN HÌNH CHÍNH WEB APP -->
+    <div id="app-screen">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-shapes"></i> WORKSPACE
+            </div>
+            <div class="user-profile">
+                <div class="name" id="user-display-name">Cán bộ</div>
+                <span class="badge" id="user-role-badge">User</span>
+            </div>
+            <ul class="nav-list">
+                <li class="nav-item active" onclick="switchTab('tong-quan', this)">
+                    <i class="fa-solid fa-chart-pie"></i> Tổng quan
+                </li>
+                <li class="nav-item" onclick="switchTab('danh-sach', this)">
+                    <i class="fa-solid fa-list-check"></i> Danh sách
+                </li>
+                <li class="nav-item" onclick="switchTab('kanban', this)">
+                    <i class="fa-solid fa-table-columns"></i> Kanban
+                </li>
+                <li class="nav-item" onclick="switchTab('gantt', this)">
+                    <i class="fa-solid fa-bars-progress"></i> Sơ đồ Gantt
+                </li>
+                <li class="nav-item" onclick="switchTab('kpi', this)">
+                    <i class="fa-solid fa-award"></i> Đánh giá KPI Chéo
+                </li>
+                <li class="nav-item" id="nav-admin-users" style="display: none;" onclick="switchTab('admin-users', this)">
+                    <i class="fa-solid fa-users-gear"></i> Quản lý Users
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h2 id="page-title">Dashboard Thống Kê</h2>
+                <div class="top-actions">
+                    <!-- Dropdown dành cho Admin chọn User để xem / chỉnh sửa -->
+                    <div class="admin-select-box" id="admin-user-selector">
+                        <span><i class="fa-solid fa-user-pen"></i> Đang xem data công việc của:</span>
+                        <select id="select-target-user" onchange="changeTargetUser(this.value)"></select>
+                    </div>
+
+                    <button class="btn-action" onclick="reloadData()"><i class="fa-solid fa-rotate"></i> Tải dữ liệu</button>
+                    <button class="btn-action btn-danger" onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Tổng quan -->
+            <div id="tab-tong-quan" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>Tỷ lệ Trạng thái <span id="chart-scope-label" style="font-size: 13px; font-weight: normal; color: #64748b;"></span></h3>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Mức độ Ưu tiên</h3>
+                        <div class="chart-container">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Danh sách -->
+            <div id="tab-danh-sach" class="tab-content">
+                <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 16px; color: #334155;">Quản lý Công Việc Độc Lập</h3>
+                    <button class="btn-login" style="width: auto; padding: 8px 16px;" onclick="addNewTask()">+ Thêm công việc mới</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Tên công việc</th>
+                                <th>Người nhận</th>
+                                <th>Mức ưu tiên</th>
+                                <th>Trạng thái</th>
+                                <th>Hạn chót</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-table-body">
+                            <!-- JS Render dữ liệu -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Kanban -->
+            <div id="tab-kanban" class="tab-content">
+                <div class="kanban-board">
+                    <div class="kanban-col" id="col-todo" ondragover="allowDrop(event)" ondrop="drop(event, 'Chưa làm')">
+                        <div class="kanban-col-header">🌙 Chưa làm <span id="count-todo">0</span></div>
+                        <div class="kanban-cards" id="cards-todo"></div>
+                    </div>
+                    <div class="kanban-col" id="col-doing" ondragover="allowDrop(event)" ondrop="drop(event, 'Đang làm')">
+                        <div class="kanban-col-header">⌛ Đang làm <span id="count-doing">0</span></div>
+                        <div class="kanban-cards" id="cards-doing"></div>
+                    </div>
+                    <div class="kanban-col" id="col-done" ondragover="allowDrop(event)" ondrop="drop(event, 'Hoàn thành')">
+                        <div class="kanban-col-header">✔️ Hoàn thành <span id="count-done">0</span></div>
+                        <div class="kanban-cards" id="cards-done"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Gantt -->
+            <div id="tab-gantt" class="tab-content">
+                <div class="card">
+                    <h3>Lộ trình triển khai</h3>
+                    <p style="color: #64748b; font-size: 14px;">(Sơ đồ tiến độ công việc cá nhân)</p>
+                </div>
+            </div>
+
+            <!-- Tab 5: Đánh giá KPI Chéo -->
+            <div id="tab-kpi" class="tab-content">
+                
+                <!-- Thanh chọn người để chấm KPI -->
+                <div class="kpi-target-bar">
+                    <i class="fa-solid fa-user-check" style="font-size: 20px; color: #0284c7;"></i>
+                    <span style="font-weight: 600; color: #0369a1;">Chọn tài khoản để chấm KPI:</span>
+                    <select id="select-kpi-target-user" onchange="changeKPITargetUser(this.value)"></select>
+                    <span id="kpi-eval-status" style="font-size: 13px; font-style: italic; color: #475569; margin-left: auto;"></span>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="font-size: 18px; margin: 0;">
+                            PHIẾU ĐÁNH GIÁ KPI CHO: <span id="kpi-target-name-display" style="color: #2563eb; text-transform: uppercase;"></span>
+                        </h3>
+                        <button class="btn-login" style="width: auto; padding: 8px 16px; background-color: #10b981;" onclick="addKPICriteria()">
+                            <i class="fa-solid fa-plus"></i> Thêm Tiêu Chí
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="kpi-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px; text-align: center;">STT</th>
+                                    <th>Tiêu chí đánh giá</th>
+                                    <th style="width: 120px; text-align: center;">Điểm tối đa</th>
+                                    <th style="width: 130px; text-align: center;">Điểm đánh giá</th>
+                                    <th style="width: 140px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kpi-table-body">
+                                <!-- JS Render Tiêu Chí KPI -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="margin-top: 20px; font-weight: bold; text-align: right; font-size: 18px;">
+                        TỔNG ĐIỂM ĐÁNH GIÁ: <span id="kpi-total-self" style="color: #2563eb;">0</span> / <span id="kpi-total-max" style="color: #059669;">0</span>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn-login" style="width: auto; padding: 10px 30px;" onclick="saveKPIRating()">LƯU KẾT QUẢ ĐÁNH GIÁ</button>
+                    </div>
+                </div>
+
+                <!-- Bảng tổng hợp tất cả đánh giá mà tài khoản này đã nhận được -->
+                <div class="card" style="margin-top: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="font-size: 17px; margin: 0; color: #1e293b;">
+                            <i class="fa-solid fa-list-ol"></i> KẾT QUẢ ĐÁNH GIÁ TỪ CÁC TÀI KHOẢN KHÁC DÀNH CHO [<span id="kpi-summary-username" style="color: #2563eb;"></span>]
+                        </h3>
+                        <div style="font-size: 16px; font-weight: bold; color: #059669;">
+                            ĐIỂM TRUNG BÌNH: <span id="kpi-average-score" style="font-size: 20px; color: #dc2626;">0</span> / 30
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tên người đánh giá</th>
+                                    <th>Vai trò</th>
+                                    <th style="text-align: center;">Điểm chấm</th>
+                                    <th style="text-align: center;">Tổng điểm tối đa</th>
+                                    <th style="text-align: center;">Thời gian đánh giá</th>
+                                    <th style="text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kpi-eval-history-body">
+                                <!-- JS Render Lịch sử đánh giá -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tab 6: Quản lý Users (Chỉ Admin) -->
+            <div id="tab-admin-users" class="tab-content">
+                <div class="card">
+                    <h3>Danh Sách Tài Khoản Trong Hệ Thống</h3>
+                    <p style="color: #64748b; font-size: 13px; margin-bottom: 15px;">* Bạn có thể bấm "Sửa Dữ Liệu" để tùy chỉnh công việc của tài khoản đó. Tên đăng nhập và Mật khẩu được bảo mật hoàn toàn.</p>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tên đăng nhập</th>
+                                    <th>Email</th>
+                                    <th>Mật khẩu</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-management-body">
+                                <!-- JS render danh sách user -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT XỬ LÝ DỮ LIỆU -->
+    <script>
+        // Cấu hình Admin
+        const ADMIN_USERNAME = 'linhnguyenxuan';
+        const ADMIN_PASSWORD = '051214';
+
+        // Biến trạng thái
+        let currentUser = '';          // Tài khoản đang đăng nhập
+        let targetUser = '';           // Tài khoản đang thao tác công việc
+        let kpiTargetUser = '';        // Tài khoản ĐƯỢC chấm KPI
+        let isAdmin = false;
+
+        // Dữ liệu mẫu khởi tạo công việc
+        const defaultTasks = [
+            { id: 'T001', name: 'Nghiên cứu tài liệu khoa học', user: 'nguyenkien', status: 'Đang làm', date: '02/09/2026', priority: 'Cao' },
+            { id: 'T002', name: 'Chuẩn bị hóa chất phòng thí nghiệm', user: 'nguyenkien', status: 'Chưa làm', date: '30/09/2026', priority: 'Bình thường' },
+            { id: 'T003', name: 'Viết báo cáo tổng kết tháng', user: 'nguyenkien', status: 'Hoàn thành', date: '01/09/2026', priority: 'Thấp' }
+        ];
+
+        // Dữ liệu mẫu khởi tạo KPI
+        const defaultKPIs = [
+            { title: 'Phẩm chất chính trị, đạo đức, văn hóa công sở', maxScore: 10, selfScore: 10 },
+            { title: 'Năng lực chuyên môn, nghiệp vụ', maxScore: 10, selfScore: 8 },
+            { title: 'Năng lực đổi mới, sáng tạo, dám làm, dám chịu trách nhiệm', maxScore: 10, selfScore: 8 }
+        ];
+
+        let tasks = [];
+        let kpiList = [];
+        let statusChartInstance = null;
+        let priorityChartInstance = null;
+
+        // Hàm hỗ trợ kiểm tra xem 1 công việc có bị QUÁ HẠN CHÓT hay không
+        function isTaskOverdue(dateStr, status) {
+            if (status === 'Hoàn thành' || !dateStr) return false;
+
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return false;
+
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; // Trong JS Tháng bắt đầu từ 0
+            const year = parseInt(parts[2], 10);
+
+            const dueDate = new Date(year, month, day, 23, 59, 59);
+            const now = new Date();
+
+            return dueDate < now;
+        }
+
+        // Lấy danh sách người dùng đã đăng ký
+        function getRegisteredUsers() {
+            return JSON.parse(localStorage.getItem('registeredUsers')) || [];
+        }
+
+        // Lấy danh sách TẤT CẢ username trong hệ thống (bao gồm cả Admin và User)
+        function getAllUsernames() {
+            const users = getRegisteredUsers();
+            let list = [ADMIN_USERNAME];
+            users.forEach(u => {
+                if (!list.includes(u.username)) list.push(u.username);
+            });
+            return list;
+        }
+
+        // Hàm lấy TOÀN BỘ danh sách công việc từ tất cả người dùng (Dành cho Admin thống kê)
+        function getAllUsersTasks() {
+            let allTasks = [];
+            const users = getRegisteredUsers();
+            
+            const adminSaved = localStorage.getItem(`tasks_${ADMIN_USERNAME}`);
+            if (adminSaved) {
+                allTasks = allTasks.concat(JSON.parse(adminSaved));
+            } else {
+                allTasks = allTasks.concat(defaultTasks.map(t => ({ ...t, user: ADMIN_USERNAME })));
+            }
+
+            users.forEach(u => {
+                const uTasks = localStorage.getItem(`tasks_${u.username}`);
+                if (uTasks) {
+                    allTasks = allTasks.concat(JSON.parse(uTasks));
+                } else {
+                    allTasks = allTasks.concat(defaultTasks.map(t => ({ ...t, user: u.username })));
+                }
+            });
+
+            return allTasks;
+        }
+
+        // Tải dữ liệu ĐỘC LẬP theo targetUser (cho công việc)
+        function loadUserData() {
+            if (!targetUser) return;
+
+            const savedTasks = localStorage.getItem(`tasks_${targetUser}`);
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+            } else {
+                tasks = defaultTasks.map(t => ({ ...t, user: targetUser }));
+                saveUserData();
+            }
+        }
+
+        // Lưu dữ liệu công việc
+        function saveUserData() {
+            if (!targetUser) return;
+            localStorage.setItem(`tasks_${targetUser}`, JSON.stringify(tasks));
+        }
+
+        // --- CÁC HÀM XỬ LÝ ĐÁNH GIÁ KPI CHÉO ---
+        // Tải bảng KPI dựa trên người được chấm (kpiTargetUser) và người đánh giá (currentUser)
+        function loadKPIRatingData() {
+            if (!kpiTargetUser || !currentUser) return;
+
+            const storageKey = `kpis_CHAM_${kpiTargetUser}_${currentUser}`;
+            const savedData = localStorage.getItem(storageKey);
+
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                // Trường hợp cấu trúc cũ (chỉ lưu mảng kpiList)
+                if (Array.isArray(parsed)) {
+                    kpiList = parsed;
+                } else {
+                    kpiList = parsed.kpiList || [];
+                }
+            } else {
+                kpiList = JSON.parse(JSON.stringify(defaultKPIs));
+            }
+
+            renderKPITable();
+            renderKPIEvalHistory();
+        }
+
+        // Lưu bảng KPI cùng thời gian chấm điểm cụ thể
+        function saveKPIRatingData(timestamp = null) {
+            if (!kpiTargetUser || !currentUser) return;
+            const storageKey = `kpis_CHAM_${kpiTargetUser}_${currentUser}`;
+            
+            // Giữ lại thời gian cũ nếu không truyền timestamp mới
+            let timeSaved = timestamp;
+            if (!timeSaved) {
+                const existing = localStorage.getItem(storageKey);
+                if (existing) {
+                    const parsed = JSON.parse(existing);
+                    if (!Array.isArray(parsed) && parsed.timestamp) {
+                        timeSaved = parsed.timestamp;
+                    }
+                }
+            }
+
+            const dataToSave = {
+                timestamp: timeSaved || 'Chưa lưu',
+                kpiList: kpiList
+            };
+
+            localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+        }
+
+        // Chuyển Tab Đăng nhập / Đăng ký
+        function toggleAuthTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+            const subTitle = document.getElementById('form-sub-title');
+
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                loginBtn.style.color = '#2563eb';
+                loginBtn.style.borderBottom = '2px solid #2563eb';
+                regBtn.style.color = '#64748b';
+                regBtn.style.borderBottom = 'none';
+                subTitle.innerText = 'Đăng nhập hệ thống quản trị công việc';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                regBtn.style.color = '#10b981';
+                regBtn.style.borderBottom = '2px solid #10b981';
+                loginBtn.style.color = '#64748b';
+                loginBtn.style.borderBottom = 'none';
+                subTitle.innerText = 'Tạo tài khoản mới cho cán bộ';
+            }
+        }
+
+        // Đăng ký tài khoản
+        function handleRegister(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('reg-email').value.trim();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+
+            if (username === ADMIN_USERNAME) {
+                alert('Tên đăng nhập này trùng với Admin hệ thống. Vui lòng đặt tên khác!');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Mật khẩu và Xác nhận mật khẩu không trùng khớp!');
+                return;
+            }
+
+            let users = getRegisteredUsers();
+
+            if (users.some(u => u.username === username)) {
+                alert('Tên đăng nhập đã tồn tại trên hệ thống!');
+                return;
+            }
+
+            users.push({ email, username, password });
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+            alert('Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay.');
+            document.getElementById('register-form').reset();
+            toggleAuthTab('login');
+            document.getElementById('login-username').value = username;
+        }
+
+        // Đăng nhập
+        function handleLogin(e) {
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const passwordInput = document.getElementById('login-password').value;
+
+            let users = getRegisteredUsers();
+            const validUser = users.find(u => u.username === usernameInput && u.password === passwordInput);
+
+            if (usernameInput === ADMIN_USERNAME && passwordInput === ADMIN_PASSWORD) {
+                currentUser = ADMIN_USERNAME;
+                targetUser = ADMIN_USERNAME;
+                kpiTargetUser = ADMIN_USERNAME;
+                isAdmin = true;
+            } else if (validUser) {
+                currentUser = usernameInput;
+                targetUser = usernameInput;
+                kpiTargetUser = usernameInput;
+                isAdmin = false;
+            } else {
+                alert('Mật khẩu hoặc Tên đăng nhập không chính xác!');
+                return;
+            }
+
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
+
+            document.getElementById('user-display-name').innerText = currentUser;
+            const badge = document.getElementById('user-role-badge');
+            
+            if (isAdmin) {
+                badge.innerText = 'ADMIN';
+                badge.style.backgroundColor = '#10b981';
+                document.getElementById('nav-admin-users').style.display = 'flex';
+                document.getElementById('admin-user-selector').style.display = 'flex';
+                populateAdminUserSelector();
+            } else {
+                badge.innerText = 'User';
+                badge.style.backgroundColor = '#2563eb';
+                document.getElementById('nav-admin-users').style.display = 'none';
+                document.getElementById('admin-user-selector').style.display = 'none';
+            }
+
+            populateKPITargetSelector();
+            loadUserData();
+            loadKPIRatingData();
+            initApp();
+        }
+
+        // Tạo danh sách tài khoản cho Admin chọn công việc
+        function populateAdminUserSelector() {
+            const select = document.getElementById('select-target-user');
+            select.innerHTML = `<option value="${ADMIN_USERNAME}">Chính mình (Admin)</option>`;
+            
+            const users = getRegisteredUsers();
+            users.forEach(u => {
+                select.innerHTML += `<option value="${u.username}">${u.username}</option>`;
+            });
+            select.value = targetUser;
+        }
+
+        // Tạo danh sách tất cả tài khoản để chấm KPI Chéo (Dành cho MỌI USER)
+        function populateKPITargetSelector() {
+            const select = document.getElementById('select-kpi-target-user');
+            select.innerHTML = '';
+
+            const allUsers = getAllUsernames();
+            allUsers.forEach(u => {
+                const label = (u === currentUser) ? `${u} (Tự chấm điểm)` : u;
+                select.innerHTML += `<option value="${u}">${label}</option>`;
+            });
+
+            select.value = kpiTargetUser;
+        }
+
+        // Admin chọn tài khoản để tùy chỉnh công việc
+        function changeTargetUser(newTarget) {
+            saveUserData();
+            targetUser = newTarget;
+            loadUserData();
+            initApp();
+        }
+
+        // Đổi người được chấm KPI
+        function changeKPITargetUser(newTarget) {
+            saveKPIRatingData();
+            kpiTargetUser = newTarget;
+            loadKPIRatingData();
+        }
+
+        // Đăng xuất
+        function logout() {
+            saveUserData();
+            saveKPIRatingData();
+            currentUser = '';
+            targetUser = '';
+            kpiTargetUser = '';
+            isAdmin = false;
+            document.getElementById('app-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('login-password').value = '';
+        }
+
+        // Render giao diện ứng dụng
+        function initApp() {
+            renderTable();
+            renderKanban();
+            renderKPITable();
+            renderKPIEvalHistory();
+            initCharts();
+            if (isAdmin) renderUserManagementTable();
+        }
+
+        // Chuyển Tab Sidebar
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+
+            element.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            const titles = {
+                'tong-quan': 'Dashboard Thống Kê',
+                'danh-sach': 'Danh Sách Công Việc',
+                'kanban': 'Bảng Kéo Thả (Kanban)',
+                'gantt': 'Sơ đồ Tiến Độ (Gantt)',
+                'kpi': 'Đánh Giá KPI Chéo Toàn Hệ Thống',
+                'admin-users': 'Quản Lý Tài Khoản Hệ Thống'
+            };
+            document.getElementById('page-title').innerText = titles[tabId];
+        }
+
+        // Render Bảng Công Việc (Cảnh Báo Quá Hạn)
+        function renderTable() {
+            const tbody = document.getElementById('task-table-body');
+            tbody.innerHTML = '';
+            tasks.forEach((task, index) => {
+                let statusClass = 'status-doing';
+                if(task.status === 'Chưa làm') statusClass = 'status-todo';
+                if(task.status === 'Hoàn thành') statusClass = 'status-done';
+
+                const overdue = isTaskOverdue(task.date, task.status);
+                const rowClass = overdue ? 'row-overdue' : '';
+                const overdueBadge = overdue ? `<span class="badge-overdue"><i class="fa-solid fa-triangle-exclamation"></i> QUÁ HẠN</span>` : '';
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td style="color: #2563eb; font-weight: bold;">${task.id}</td>
+                        <td><b>${task.name}</b> ${overdueBadge}</td>
+                        <td>${task.user}</td>
+                        <td><span style="font-size: 12px; font-weight: bold; color: ${task.priority === 'Cao' ? '#ef4444' : task.priority === 'Bình thường' ? '#f59e0b' : '#10b981'}">${task.priority}</span></td>
+                        <td><span class="status-tag ${statusClass}">${task.status}</span></td>
+                        <td style="${overdue ? 'color: #dc2626; font-weight: bold;' : ''}">${task.date}</td>
+                        <td>
+                            <button class="btn-sm btn-edit" onclick="editTask(${index})"><i class="fa-solid fa-pen"></i> Sửa</button>
+                            <button class="btn-sm btn-delete" onclick="deleteTask(${index})"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Thêm công việc mới
+        function addNewTask() {
+            const taskName = prompt("Nhập tên công việc mới:");
+            if (!taskName || !taskName.trim()) return;
+
+            const priority = prompt("Mức độ ưu tiên (Cao / Bình thường / Thấp):", "Bình thường") || "Bình thường";
+            const date = prompt("Hạn chót (ngày/tháng/năm, VD: 30/09/2026):", "30/09/2026") || "30/09/2026";
+
+            const newTask = {
+                id: 'T' + String(tasks.length + 1).padStart(3, '0'),
+                name: taskName.trim(),
+                user: targetUser,
+                status: 'Chưa làm',
+                date: date.trim(),
+                priority: ['Cao', 'Bình thường', 'Thấp'].includes(priority) ? priority : 'Bình thường'
+            };
+
+            tasks.push(newTask);
+            saveUserData();
+            initApp();
+        }
+
+        // Chỉnh sửa công việc
+        function editTask(index) {
+            const task = tasks[index];
+
+            const newName = prompt("Sửa tên công việc:", task.name);
+            if (newName === null) return;
+
+            const newPriority = prompt("Cập nhật mức ưu tiên (Cao / Bình thường / Thấp):", task.priority);
+            const newStatus = prompt("Cập nhật trạng thái (Chưa làm / Đang làm / Hoàn thành):", task.status);
+            const newDate = prompt("Cập nhật hạn chót (ngày/tháng/năm, VD: 30/09/2026):", task.date);
+
+            if (newName.trim() !== '') task.name = newName.trim();
+            if (['Cao', 'Bình thường', 'Thấp'].includes(newPriority)) task.priority = newPriority;
+            if (['Chưa làm', 'Đang làm', 'Hoàn thành'].includes(newStatus)) task.status = newStatus;
+            if (newDate && newDate.trim() !== '') task.date = newDate.trim();
+
+            saveUserData();
+            initApp();
+        }
+
+        // Xóa công việc
+        function deleteTask(index) {
+            if (confirm("Bạn có chắc chắn muốn xóa công việc này?")) {
+                tasks.splice(index, 1);
+                saveUserData();
+                initApp();
+            }
+        }
+
+        // Render Bảng Kanban (Cảnh Báo Quá Hạn)
+        function renderKanban() {
+            const todoBox = document.getElementById('cards-todo');
+            const doingBox = document.getElementById('cards-doing');
+            const doneBox = document.getElementById('cards-done');
+
+            todoBox.innerHTML = ''; doingBox.innerHTML = ''; doneBox.innerHTML = '';
+
+            let countTodo = 0, countDoing = 0, countDone = 0;
+
+            tasks.forEach(task => {
+                const overdue = isTaskOverdue(task.date, task.status);
+                const cardOverdueClass = overdue ? 'card-overdue' : '';
+                const overdueTag = overdue ? `<span style="color: #dc2626; font-weight: bold; font-size: 11px;"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</span>` : '';
+
+                const cardHTML = `
+                    <div class="kanban-card ${cardOverdueClass}" draggable="true" ondragstart="drag(event, '${task.id}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="id">${task.id}</span>
+                            ${overdueTag}
+                        </div>
+                        <div class="title">${task.name}</div>
+                        <div class="meta">
+                            <span><i class="fa-regular fa-user"></i> ${task.user}</span>
+                            <span style="${overdue ? 'color: #dc2626; font-weight: bold;' : ''}"><i class="fa-regular fa-calendar"></i> ${task.date}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (task.status === 'Chưa làm') {
+                    todoBox.innerHTML += cardHTML;
+                    countTodo++;
+                } else if (task.status === 'Đang làm') {
+                    doingBox.innerHTML += cardHTML;
+                    countDoing++;
+                } else if (task.status === 'Hoàn thành') {
+                    doneBox.innerHTML += cardHTML;
+                    countDone++;
+                }
+            });
+
+            document.getElementById('count-todo').innerText = countTodo;
+            document.getElementById('count-doing').innerText = countDoing;
+            document.getElementById('count-done').innerText = countDone;
+        }
+
+        // Kéo thả Kanban
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev, id) { ev.dataTransfer.setData("text", id); }
+        function drop(ev, newStatus) {
+            ev.preventDefault();
+            const id = ev.dataTransfer.getData("text");
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.status = newStatus;
+                saveUserData();
+                renderKanban();
+                renderTable();
+                updateCharts();
+            }
+        }
+
+        // --- CÁC HÀM XỬ LÝ KPI CHÉO BẢNG CHÍNH ---
+        function renderKPITable() {
+            document.getElementById('kpi-target-name-display').innerText = kpiTargetUser;
+            const evalStatus = document.getElementById('kpi-eval-status');
+
+            if (kpiTargetUser === currentUser) {
+                evalStatus.innerText = "(Bạn đang TỰ CHẤM ĐIỂM cho chính mình)";
+            } else {
+                evalStatus.innerText = `(Bạn [${currentUser}] đang chấm điểm cho đồng nghiệp [${kpiTargetUser}])`;
+            }
+
+            const tbody = document.getElementById('kpi-table-body');
+            tbody.innerHTML = '';
+
+            if (!kpiList || kpiList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">Chưa có tiêu chí KPI nào. Hãy nhấn "+ Thêm Tiêu Chí" để thêm.</td></tr>`;
+            } else {
+                kpiList.forEach((item, index) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: #475569;">${index + 1}</td>
+                            <td><b>${item.title}</b></td>
+                            <td style="text-align: center; font-weight: bold; color: #059669;">${item.maxScore}</td>
+                            <td style="text-align: center;">
+                                <input type="number" value="${item.selfScore}" min="0" max="${item.maxScore}" step="0.5" onchange="updateKPISelfScore(${index}, this.value)">
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="btn-sm btn-edit" onclick="editKPICriteria(${index})"><i class="fa-solid fa-pen"></i> Sửa</button>
+                                <button class="btn-sm btn-delete" onclick="deleteKPICriteria(${index})"><i class="fa-solid fa-trash"></i> Xóa</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            calcKPITotal();
+        }
+
+        function addKPICriteria() {
+            const title = prompt("Nhập nội dung tiêu chí đánh giá mới:");
+            if (!title || !title.trim()) return;
+
+            const maxScoreInput = prompt("Nhập điểm tối đa cho tiêu chí này (VD: 10):", "10");
+            const maxScore = Number(maxScoreInput) > 0 ? Number(maxScoreInput) : 10;
+
+            kpiList.push({
+                title: title.trim(),
+                maxScore: maxScore,
+                selfScore: maxScore
+            });
+
+            saveKPIRatingData();
+            renderKPITable();
+        }
+
+        function editKPICriteria(index) {
+            const item = kpiList[index];
+            const newTitle = prompt("Sửa tên tiêu chí:", item.title);
+            if (newTitle === null) return;
+
+            const newMaxScoreInput = prompt("Sửa điểm tối đa cho tiêu chí:", item.maxScore);
+            const newMaxScore = Number(newMaxScoreInput) > 0 ? Number(newMaxScoreInput) : item.maxScore;
+
+            if (newTitle.trim() !== '') item.title = newTitle.trim();
+            item.maxScore = newMaxScore;
+            if (item.selfScore > newMaxScore) item.selfScore = newMaxScore;
+
+            saveKPIRatingData();
+            renderKPITable();
+        }
+
+        function deleteKPICriteria(index) {
+            if (confirm("Bạn có chắc chắn muốn xóa tiêu chí đánh giá này?")) {
+                kpiList.splice(index, 1);
+                saveKPIRatingData();
+                renderKPITable();
+            }
+        }
+
+        function updateKPISelfScore(index, value) {
+            let val = Number(value);
+            if (isNaN(val)) val = 0;
+            if (val < 0) val = 0;
+            if (val > kpiList[index].maxScore) val = kpiList[index].maxScore;
+
+            kpiList[index].selfScore = val;
+            saveKPIRatingData();
+            calcKPITotal();
+        }
+
+        function calcKPITotal() {
+            let selfTotal = 0;
+            let maxTotal = 0;
+
+            kpiList.forEach(item => {
+                selfTotal += Number(item.selfScore || 0);
+                maxTotal += Number(item.maxScore || 0);
+            });
+
+            document.getElementById('kpi-total-self').innerText = selfTotal.toFixed(1);
+            document.getElementById('kpi-total-max').innerText = maxTotal;
+        }
+
+        // Lưu kết quả chấm điểm kèm mốc thời gian thực hiện
+        function saveKPIRating() {
+            const now = new Date();
+            const dateStr = String(now.getDate()).padStart(2, '0') + '/' + 
+                            String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+                            now.getFullYear();
+            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + 
+                            String(now.getMinutes()).padStart(2, '0') + ':' + 
+                            String(now.getSeconds()).padStart(2, '0');
+            
+            const fullTimestamp = `${timeStr} - ${dateStr}`;
+
+            saveKPIRatingData(fullTimestamp);
+            alert(`Đã lưu kết quả đánh giá KPI cho [${kpiTargetUser}] thành công lúc ${fullTimestamp}!`);
+            renderKPIEvalHistory();
+        }
+
+        // --- RENDER BẢNG TỔNG HỢP CÁC KẾT QUẢ ĐÁNH GIÁ MÀ kpiTargetUser NHẬN ĐƯỢC ---
+        function renderKPIEvalHistory() {
+            document.getElementById('kpi-summary-username').innerText = kpiTargetUser;
+            const historyBody = document.getElementById('kpi-eval-history-body');
+            historyBody.innerHTML = '';
+
+            const allUsers = getAllUsernames();
+            let totalScoresReceived = 0;
+            let totalEvaluations = 0;
+
+            allUsers.forEach(evaluator => {
+                const storageKey = `kpis_CHAM_${kpiTargetUser}_${evaluator}`;
+                const savedData = localStorage.getItem(storageKey);
+
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    let items = [];
+                    let timestampDisplay = 'Chưa có thông tin';
+
+                    // Xử lý đọc đúng định dạng dữ liệu (Mới/Cũ)
+                    if (Array.isArray(parsed)) {
+                        items = parsed;
+                    } else {
+                        items = parsed.kpiList || [];
+                        timestampDisplay = parsed.timestamp || 'Chưa rõ';
+                    }
+
+                    let userSum = 0;
+                    let maxSum = 0;
+
+                    items.forEach(item => {
+                        userSum += Number(item.selfScore || 0);
+                        maxSum += Number(item.maxScore || 0);
+                    });
+
+                    totalScoresReceived += userSum;
+                    totalEvaluations++;
+
+                    const roleTag = (evaluator === ADMIN_USERNAME) 
+                        ? `<span style="background-color: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">ADMIN</span>` 
+                        : `<span style="background-color: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-size: 11px;">User</span>`;
+
+                    const selfTag = (evaluator === kpiTargetUser) ? ` <small style="color: #64748b;">(Tự chấm)</small>` : '';
+
+                    historyBody.innerHTML += `
+                        <tr>
+                            <td><b>${evaluator}</b> ${selfTag}</td>
+                            <td>${roleTag}</td>
+                            <td style="text-align: center; font-weight: bold; color: #2563eb; font-size: 15px;">${userSum.toFixed(1)}</td>
+                            <td style="text-align: center; color: #059669; font-weight: bold;">${maxSum}</td>
+                            <td style="text-align: center; font-size: 13px; color: #475569;">
+                                <i class="fa-regular fa-clock" style="color: #0284c7;"></i> ${timestampDisplay}
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="btn-sm btn-view" onclick="viewDetailedKPI('${evaluator}')"><i class="fa-solid fa-eye"></i> Xem phiếu</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (totalEvaluations === 0) {
+                historyBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 15px;">Chưa có tài khoản nào thực hiện đánh giá cho [${kpiTargetUser}].</td></tr>`;
+                document.getElementById('kpi-average-score').innerText = '0';
+            } else {
+                const avg = totalScoresReceived / totalEvaluations;
+                document.getElementById('kpi-average-score').innerText = avg.toFixed(1);
+            }
+        }
+
+        // Xem phiếu đánh giá của một người cụ thể
+        function viewDetailedKPI(evaluatorUsername) {
+            alert(`Bạn đang tải phiếu đánh giá của [${evaluatorUsername}] dành cho [${kpiTargetUser}]`);
+            const storageKey = `kpis_CHAM_${kpiTargetUser}_${evaluatorUsername}`;
+            const savedData = localStorage.getItem(storageKey);
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                if (Array.isArray(parsed)) {
+                    kpiList = parsed;
+                } else {
+                    kpiList = parsed.kpiList || [];
+                }
+                renderKPITable();
+            }
+        }
+
+        // Cập nhật biểu đồ
+        function updateCharts() {
+            if (!statusChartInstance || !priorityChartInstance) return;
+
+            const dataSource = (currentUser === ADMIN_USERNAME) ? getAllUsersTasks() : tasks;
+
+            let todo = dataSource.filter(t => t.status === 'Chưa làm').length;
+            let doing = dataSource.filter(t => t.status === 'Đang làm').length;
+            let done = dataSource.filter(t => t.status === 'Hoàn thành').length;
+
+            statusChartInstance.data.labels = [`Chưa làm (${todo})`, `Đang làm (${doing})`, `Hoàn thành (${done})`];
+            statusChartInstance.data.datasets[0].data = [todo, doing, done];
+            statusChartInstance.update();
+
+            let high = dataSource.filter(t => t.priority === 'Cao').length;
+            let normal = dataSource.filter(t => t.priority === 'Bình thường').length;
+            let low = dataSource.filter(t => t.priority === 'Thấp').length;
+
+            priorityChartInstance.data.datasets[0].data = [high, normal, low];
+            priorityChartInstance.update();
+        }
+
+        // Khởi tạo Chart.js
+        function initCharts() {
+            const ctx1 = document.getElementById('statusChart').getContext('2d');
+            const ctx2 = document.getElementById('priorityChart').getContext('2d');
+
+            if (statusChartInstance) statusChartInstance.destroy();
+            if (priorityChartInstance) priorityChartInstance.destroy();
+
+            const dataSource = (currentUser === ADMIN_USERNAME) ? getAllUsersTasks() : tasks;
+
+            const scopeLabel = document.getElementById('chart-scope-label');
+            if (scopeLabel) {
+                scopeLabel.innerText = (currentUser === ADMIN_USERNAME) ? '(Thống kê tổng hợp toàn hệ thống)' : '(Thống kê cá nhân)';
+            }
+
+            let todo = dataSource.filter(t => t.status === 'Chưa làm').length;
+            let doing = dataSource.filter(t => t.status === 'Đang làm').length;
+            let done = dataSource.filter(t => t.status === 'Hoàn thành').length;
+
+            statusChartInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: [`Chưa làm (${todo})`, `Đang làm (${doing})`, `Hoàn thành (${done})`],
+                    datasets: [{
+                        data: [todo, doing, done],
+                        backgroundColor: ['#a5a6f6', '#2563eb', '#06b6d4'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        cutout: '65%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 12, padding: 15, font: { size: 13 } } }
+                    }
+                }
+            });
+
+            let high = dataSource.filter(t => t.priority === 'Cao').length;
+            let normal = dataSource.filter(t => t.priority === 'Bình thường').length;
+            let low = dataSource.filter(t => t.priority === 'Thấp').length;
+
+            priorityChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Cao', 'Bình thường', 'Thấp'],
+                    datasets: [{
+                        label: 'Số lượng công việc',
+                        data: [high, normal, low],
+                        backgroundColor: ['#ff4d6d', '#e69100', '#10b981'],
+                        borderRadius: 4,
+                        barThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Tab Quản lý Users dành cho Admin
+        function renderUserManagementTable() {
+            const tbody = document.getElementById('user-management-body');
+            tbody.innerHTML = '';
+
+            const users = getRegisteredUsers();
+            users.forEach((u, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><b>${u.username}</b> <span style="font-size: 11px; color: #64748b;">(Không được sửa)</span></td>
+                        <td>${u.email}</td>
+                        <td>•••••••• <span style="font-size: 11px; color: #64748b;">(Bảo mật)</span></td>
+                        <td>
+                            <button class="btn-sm btn-edit" onclick="adminEditUserTasks('${u.username}')"><i class="fa-solid fa-pen-to-square"></i> Sửa Dữ Liệu</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function adminEditUserTasks(username) {
+            document.getElementById('select-target-user').value = username;
+            changeTargetUser(username);
+            switchTab('danh-sach', document.querySelectorAll('.nav-item')[1]);
+        }
+
+        function reloadData() {
+            loadUserData();
+            loadKPIRatingData();
+            initApp();
+        }
+    </script>
+</body>
+</html>
